@@ -1,0 +1,194 @@
+---
+swagger: "2.0"
+info:
+  description: "Easily use IPFS from Web 2.0 applications"
+  version: "1.0.0"
+  title: "FISSION"
+  contact:
+    name: "FISSION Team"
+    url: "https://fission.codes"
+    email: "support@fission.codes"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0"
+host: "hostless.dev"
+tags:
+- name: "Heroku"
+  description: "Interaction with the Heroku add-on API"
+- name: "IPFS"
+  description: "The primary IPFS API"
+- name: "Ping"
+  description: "Check for liveness"
+schemes:
+- "https"
+paths:
+  /ipfs:
+    post:
+      tags:
+      - "IPFS"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/octet-stream"
+      - "text/plain;charset=utf-8"
+      parameters:
+      - name: "file"
+        in: "query"
+        description: "A file to upload (may also be multipart/form-data)"
+        required: true
+        type: "string"
+        x-exportParamName: "File"
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: "#/definitions/IPFSAddress"
+  /ipfs/peers:
+    get:
+      tags:
+      - "IPFS"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters: []
+      responses:
+        200:
+          description: ""
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/IPFSPeer"
+  /heroku/resources:
+    post:
+      tags:
+      - "Heroku"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/vnd.heroku-addons+json;version=3"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/ProvisionRequest"
+        x-exportParamName: "Body"
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: "#/definitions/HerokuProvision"
+        400:
+          description: "Invalid `body`"
+  /ping:
+    get:
+      tags:
+      - "Ping"
+      produces:
+      - "application/json;charset=utf-8"
+      - "text/plain;charset=utf-8"
+      parameters: []
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: "#/definitions/Pong"
+securityDefinitions:
+  basic:
+    type: "basic"
+definitions:
+  IPFSAddress:
+    type: "string"
+    example: "QmW2WQi7j6c7UgJTarActp7tDNikE4B2qXtFCfLPdsgaTQ"
+  Serialized File:
+    type: "string"
+  IPFSPeer:
+    type: "string"
+    example: "/ip4/178.62.158.247/tcp/4001/ipfs/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd"
+  HerokuProvision:
+    type: "object"
+    required:
+    - "config"
+    - "id"
+    properties:
+      id:
+        $ref: "#/definitions/UserID"
+      config:
+        $ref: "#/definitions/UserConfig"
+      message:
+        type: "string"
+    example:
+      config:
+        INTERPLANETARY_FISSION_PASSWORD: "GW0SHByPmY0.y+lg)x7De.PNmJvh1"
+        INTERPLANETARY_FISSION_USERNAME: "c74bd95b8555275277d4"
+        INTERPLANETARY_FISSION_URL: "https://hostless.dev/ipfs"
+      id: 4213
+      message: "Provisioned successfully"
+  UserID:
+    type: "integer"
+  UserConfig:
+    type: "object"
+    required:
+    - "INTERPLANETARY_FISSION_PASSWORD"
+    - "INTERPLANETARY_FISSION_URL"
+    - "INTERPLANETARY_FISSION_USERNAME"
+    properties:
+      INTERPLANETARY_FISSION_URL:
+        type: "string"
+      INTERPLANETARY_FISSION_USERNAME:
+        type: "string"
+      INTERPLANETARY_FISSION_PASSWORD:
+        $ref: "#/definitions/Secret"
+  Secret:
+    type: "string"
+    example: "U)mRvIvI6$L_MkYpme!lfzMte_92M5G912-NUfRmfxhRKx$Rr6aLUxqdqW"
+  ProvisionRequest:
+    type: "object"
+    required:
+    - "callbackUrl"
+    - "name"
+    - "plan"
+    - "region"
+    - "uuid"
+    properties:
+      callbackUrl:
+        type: "string"
+      name:
+        type: "string"
+      plan:
+        $ref: "#/definitions/Tier"
+      region:
+        $ref: "#/definitions/Region"
+      uuid:
+        $ref: "#/definitions/UUID"
+    title: "Heroku Provisioning Request"
+    description: "Request from Heroku to provision a new user"
+    example:
+      uuid: "0cebfcfe-93c9-11e9-bc42-526af7764f64"
+      plan: "free"
+      name: "my-awesome-app"
+      callback_url: "callback.herokuapp.com/foo"
+      region: "amazon-web-services::ap-northeast-1"
+  Tier:
+    type: "string"
+    enum:
+    - "test"
+    - "free"
+  Region:
+    type: "string"
+    enum:
+    - "california"
+    - "dublin"
+    - "frankfurt"
+    - "oregon"
+    - "singapore"
+    - "sydney"
+    - "tokyo"
+    - "virginia"
+  UUID:
+    type: "string"
+    format: "uuid"
+    example: "00000000-0000-0000-0000-000000000000"
+  Pong:
+    type: "string"
+    description: "A simple response"
+    example: "pong"
